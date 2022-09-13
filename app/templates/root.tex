@@ -7,7 +7,9 @@
 
 \usepackage{amsmath, amscd, amsfonts, amsthm, amssymb, bbm, mathtools}
 \usepackage{aliascnt}
+<% if (locals.hasAppendix) { -%>
 \usepackage{apptools}
+<% } -%>
 \usepackage{comment}
 \usepackage{float, graphicx, tikz}
 \usepackage{xkvltxp, fixme}
@@ -45,8 +47,10 @@
 \theoremstyle{remark}
 \autotheorem{rem}{theorem}{Remark}
 
+<% if (locals.hasAppendix) { -%>
 \AtAppendix{\counterwithin{theorem}{section}}
 \AtAppendix{\counterwithin{equation}{section}}
+<% } -%>
 
 \hypersetup{
   pdftitle={\@title},
@@ -59,29 +63,37 @@
 
 \begin{document}
 
+<% if (type === 'article') { -%>
 \begin{abstract}
 \input{abstract}
 \end{abstract}
 
+<% } -%>
 \maketitle
 
 \listoffixmes
 
+<% if (type === 'article') { -%>
 \input{introduction}
 \input{acknowledgments}
 
 \input{preliminaries}
 \input{main}
-<% if (hasAppendix) { -%>
 
+<% if (hasAppendix) { -%>
 \newpage
 \appendix
 \input{appendix}
 <% } -%>
 
 \newpage
+<% } else { -%>
+\fxfatal[layout=inline]{Write notes.}
+<% } -%>
+
+<% if (hasBiblography) { -%>
 \bibliographystyle{alpha}
 \bibliography{main}
-
+<% } -%>
 
 \end{document}

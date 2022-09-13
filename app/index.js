@@ -2,11 +2,11 @@ const Generator = require('yeoman-generator')
 
 module.exports = class extends Generator {
   async run () {
-    const { author, email, address } = await this.prompt([
+    const props = await this.prompt([
       {
         type: 'list',
         name: 'type',
-        choices: ['article'],
+        choices: ['article', 'notes'],
         message: 'Choose a type of project:'
       },
       {
@@ -29,34 +29,59 @@ module.exports = class extends Generator {
       }
     ])
 
-    const { hasAppendix } = await this.prompt([
-      {
-        type: 'confirm',
-        name: 'hasAppendix',
-        message: 'Does the article has appendix?',
-        default: false
-      }
-    ])
-
     const templates = [
       { src: 'github/workflows/main.yml', dest: '.github/workflows/main.yml' },
-      'abstract.tex',
-      'main.tex',
-      'acknowledgments.tex',
       { src: 'gitignore', dest: '.gitignore' },
-      'introduction.tex',
-      'main.bib',
-      'main.tex',
-      'preliminaries.tex',
-      'root.tex',
       'shortcuts.tex'
     ]
 
-    if (hasAppendix) {
-      templates.push('appendix.tex')
-    }
+    if (props.type === 'article') {
+      templates.push(
+        { src: 'root.tex', dest: 'root.tex' },
+        'abstract.tex',
+        'acknowledgments.tex',
+        'introduction.tex',
+        'main.tex',
+        'preliminaries.tex',
+        'main.bib'
+      )
 
-    const props = { author, email, address, hasAppendix }
+      props.root_file = 'root.tex'
+
+      const { hasAppendix } = await this.prompt([
+        {
+          type: 'confirm',
+          name: 'hasAppendix',
+          message: 'Does the article has appendix?',
+          default: false
+        }
+      ])
+
+      props.hasAppendix = hasAppendix
+      props.hasBiblography = true
+
+      if (hasAppendix) {
+        templates.push('appendix.tex')
+      }
+    } else if (props.type === 'notes') {
+      templates.push({ src: 'root.tex', dest: 'main.tex' })
+      props.root_file = 'main.tex'
+
+      const { hasBiblography } = await this.prompt([
+        {
+          type: 'confirm',
+          name: 'hasBiblography',
+          message: 'Does the notes has biblography?',
+          default: true
+        }
+      ])
+
+      props.hasBiblography = hasBiblography
+
+      if (hasBiblography) {
+        templates.push('main.bib')
+      }
+    }
 
     templates.map(template => {
       const { src, dest } = (typeof template === 'string')

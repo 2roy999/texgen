@@ -3,16 +3,12 @@ name: CI
 on:
   push:
     branches: '*'
-    tags:
-      - v*
-  pull_request:
-    branches: [ main ]
-  
-    
+    tags: '*'
+
   workflow_dispatch:
 
 env:
-  root_file: root.tex
+  root_file: <%= root_file %>
 
 jobs:
   build:
@@ -24,21 +20,23 @@ jobs:
       - name: Install pdf-info
         run: |
           apt-get update && apt-get install poppler-utils -y
-    
+
       - name: Checkout
         uses: actions/checkout@v2
 
       - name: Build Document
         run: |
+          <%_ if (locals.hasBiblography) { _%>
           pdflatex -interaction=nonstopmode -jobname=output -shell-escape ${{ env.root_file }}
           bibtex output.aux
+          <%_ } _%>
           pdflatex -interaction=nonstopmode -jobname=output -shell-escape ${{ env.root_file }}
           pdflatex -interaction=nonstopmode -jobname=output -shell-escape ${{ env.root_file }}
-      
+
       - name: Rename Document
         id: rename_doc
         run: |
-          MAIN_DOC_NAME=$(pdfinfo output.pdf | grep -ia --color=none -e '^title:\s*' | tail -c +7 | awk '{$1=$1};1')
+          MAIN_DOC_NAME=$(pdfinfo output.pdf | grep -ia --color=none -e '^title:\s*' | tail -c +7 | awk '{$1=$1};1' | tr ' ' '_')
           if [ -z $MAIN_DOC_NAME ]; then
             MAIN_DOC=output.pdf
             echo "No pdf properties, renaming skipped."
@@ -49,16 +47,19 @@ jobs:
             echo "Renaming complete."
           fi
           echo "::set-output name=main_doc::$MAIN_DOC"
-      
+
       - name: Upload Document
-        uses: actions/upload-artifact@v2.2.4
+        uses: adityak74/google-drive-upload-git-action@main
+        if: secrets.gcredentials != null && secrets.drive_folder != null
         with:
-          name: document
-          path: ${{ steps.rename_doc.outputs.main_doc }}
-          if-no-files-found: error
-      
+          credentials: ${{ secrets.gcredentials }}
+          filename: ${{ steps.rename_doc.outputs.main_doc }}
+          folderId: ${{ secrets.drive_folder }}
+          name: ${{ github.ref_name }}.${{ steps.rename_doc.outputs.main_doc }}
+          overwrite: true
+
       - name: Release Document
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+        if: github.ref_type == 'tag'
         with:
           files: ${{ steps.rename_doc.outputs.main_doc }}
