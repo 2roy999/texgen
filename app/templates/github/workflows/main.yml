@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: '*'
+    tags:
+      - v*
+  pull_request:
+    branches: [ main ]
+  
+    
+  workflow_dispatch:
+
+env:
+  root_file: root.tex
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: registry.gitlab.com/islandoftex/images/texlive:latest
+
+    steps:
+      - name: Install pdf-info
+        run: |
+          apt-get update && apt-get install poppler-utils -y
+    
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build Document
+        run: |
+          pdflatex -interaction=nonstopmode -jobname=output -shell-escape ${{ env.root_file }}
+          bibtex output.aux
+          pdflatex -interaction=nonstopmode -jobname=output -shell-escape ${{ env.root_file }}
+          pdflatex -interaction=nonstopmode -jobname=output -shell-escape ${{ env.root_file }}
+      
+      - name: Rename Document
+        id: rename_doc
+        run: |
+          MAIN_DOC_NAME=$(pdfinfo output.pdf | grep -ia --color=none -e '^title:\s*' | tail -c +7 | awk '{$1=$1};1')
+          if [ -z $MAIN_DOC_NAME ]; then
+            MAIN_DOC=output.pdf
+            echo "No pdf properties, renaming skipped."
+          else
+            MAIN_DOC=$MAIN_DOC_NAME.pdf
+            echo "Renaming document to $MAIN_DOC..."
+            cp output.pdf "$MAIN_DOC"
+            echo "Renaming complete."
+          fi
+          echo "::set-output name=main_doc::$MAIN_DOC"
+      
+      - name: Upload Document
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          name: document
+          path: ${{ steps.rename_doc.outputs.main_doc }}
+          if-no-files-found: error
+      
+      - name: Release Document
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ${{ steps.rename_doc.outputs.main_doc }}
