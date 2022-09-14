@@ -6,7 +6,11 @@
   "repository": "git@github.com:2roy999/texgen.git",
   "author": "Roy Shmueli",
   "license": "MIT",
+  "bin": {
+    "texgen": "./index.js"
+  },
   "dependencies": {
+    "yeoman-environment": "^3.10.0",
     "yeoman-generator": "^5.7.0"
   },
   "devDependencies": {
