@@ -55,11 +55,19 @@ jobs:
           credentials: ${{ secrets.gcredentials }}
           filename: ${{ steps.rename_doc.outputs.main_doc }}
           folderId: ${{ secrets.drive_folder }}
-          name: ${{ github.ref_name }}.${{ steps.rename_doc.outputs.main_doc }}
+          name: ${{ github.event.repository.name }}.${{ github.ref_name }}.pdf
           overwrite: true
+
+      - name: Collect sources
+        id: collect_src
+        if: github.ref_type == 'tag'
+        run: |
+          zip ${{ github.event.repository.name }}_src.zip *.tex *.bbl *.ind *.gls *.nls
 
       - name: Release Document
         uses: softprops/action-gh-release@v1
         if: github.ref_type == 'tag'
         with:
-          files: ${{ steps.rename_doc.outputs.main_doc }}
+          files: |
+            ${{ steps.rename_doc.outputs.main_doc }}
+            ${{ github.event.repository.name }}_src.zip

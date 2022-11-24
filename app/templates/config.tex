@@ -1,0 +1,53 @@
+% Modulo spaces
+
+\renewcommand{\pod}[1]{\allowbreak\mathchoice
+  {\if@display \mkern 18mu\else \mkern 8mu\fi (#1)}
+  {\if@display \mkern 18mu\else \mkern 8mu\fi (#1)}
+  {\mkern4mu(#1)}
+  {\mkern4mu(#1)}
+}
+
+% Theorems defitions
+
+\newcommand{\autotheorem}[3]{
+\newaliascnt{#1counter}{#2}
+\newtheorem{#1}[#1counter]{#3}
+\expandafter\newcommand\csname #1counterautorefname\endcsname{#3}
+}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+
+\autotheorem{thm}{theorem}{Theorem}
+\autotheorem{lem}{theorem}{Lemma}
+\autotheorem{prop}{theorem}{Proposition}
+\autotheorem{cor}{theorem}{Corollary}
+\autotheorem{fact}{theorem}{Fact}
+
+
+\theoremstyle{definition}
+\autotheorem{defn}{theorem}{Definition}
+\autotheorem{exm}{theorem}{Example}
+
+\theoremstyle{remark}
+\autotheorem{rem}{theorem}{Remark}
+
+\newtheoremstyle{case}%
+  {\topsep}%
+  {\topsep}%
+  {}%
+  {\parindent}%
+  {\itshape}%
+  {}%
+  { }%
+  {\thmname{#1}\thmnumber{ #2}:{\thmnote{ #3.}}}
+
+\theoremstyle{case}
+\newtheorem{case}{Case}
+\counterwithin*{case}{theorem}
+\providecommand*{\caseautorefname}{Case}
+
+<% if (locals.hasAppendix) { -%>
+\AtAppendix{\counterwithin{theorem}{section}}
+\AtAppendix{\counterwithin{equation}{section}}
+<% } -%>
