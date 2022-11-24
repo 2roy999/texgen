@@ -6,6 +6,10 @@
   "repository": "git@github.com:2roy999/texgen.git",
   "author": "Roy Shmueli",
   "license": "MIT",
+  "scripts": {
+    "lint": "eslint app/**.js",
+    "ci": "yarn lint"
+  },
   "bin": {
     "texgen": "./index.js"
   },
