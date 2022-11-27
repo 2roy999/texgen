@@ -34,7 +34,10 @@ jobs:
           if [ "$LATEST" = "$VERSION" ] && return 1 || \
             [ "$LATEST" = "`echo -e "$LATEST\n$VERSION" | sort -V | head -n1`" ]
           then
+            echo Publishing package... 
             npm publish
+          else
+            echo Skip publishing package.
           fi
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
