@@ -29,8 +29,11 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: |
           PACKAGE=$(node -e "console.log(require('./package.json').name)")
+          echo package: $PACKAGE
           VERSION=$(node -e "console.log(require('./package.json').version)")
+          echo version: $VERSION
           LATEST=$(npm view $PACKAGE version)
+          echo latest: $LATEST
           if [ "$LATEST" = "$VERSION" ] && return 1 || \
             [ "$LATEST" = "`echo -e "$LATEST\n$VERSION" | sort -V | head -n1`" ]
           then
