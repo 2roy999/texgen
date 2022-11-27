@@ -46,7 +46,7 @@ jobs:
             cp output.pdf "$MAIN_DOC"
             echo "Renaming complete."
           fi
-          echo "::set-output name=main_doc::$MAIN_DOC"
+          echo "main_doc=$MAIN_DOC" >> $GITHUB_OUTPUT
 
       - name: Upload Document
         uses: adityak74/google-drive-upload-git-action@main
