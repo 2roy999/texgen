@@ -35,7 +35,7 @@ jobs:
             [ "$LATEST" = "`echo -e "$LATEST\n$VERSION" | sort -V | head -n1`" ]
           then
             echo Publishing package... 
-            npm publish
+            echo npm publish
           else
             echo Skip publishing package.
           fi
