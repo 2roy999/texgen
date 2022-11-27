@@ -34,7 +34,7 @@ jobs:
           echo version: $VERSION
           LATEST=$(npm view $PACKAGE version)
           echo latest: $LATEST
-          if [ "$LATEST" = "$VERSION" ] && return 1 || \
+          if [ "$LATEST" != "$VERSION" ] && \
             [ "$LATEST" = "`echo -e "$LATEST\n$VERSION" | sort -V | head -n1`" ]
           then
             echo Publishing package... 
