@@ -1,0 +1,24 @@
+# texgen
+
+texgen is a program for generating LaTeX projects in mathematics. It is easy to install and use, allowing you to quickly start working on a project.
+
+## Installation
+
+texgen can be installed via npm:
+
+```
+sudo npm -g install texgen
+```
+
+## Usage
+
+Once installed, you can use texgen by typing the following into your terminal:
+
+```
+texgen
+```
+
+This will prompt you to enter information about your project, such as its title, author, and the type of document you want to generate. Once you have entered this information, texgen will generate a LaTeX file with the necessary commands to produce the desired output.
+
+You can then compile the file using a LaTeX compiler such as `pdflatex` or `xelatex`.
+
