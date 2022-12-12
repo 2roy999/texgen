@@ -32,6 +32,7 @@ module.exports = class extends Generator {
     const templates = [
       { src: 'github/workflows/main.yml', dest: '.github/workflows/main.yml' },
       { src: 'gitignore', dest: '.gitignore' },
+      'config.tex',
       'shortcuts.tex'
     ]
 
