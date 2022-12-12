@@ -50,7 +50,6 @@ jobs:
 
       - name: Upload Document
         uses: adityak74/google-drive-upload-git-action@main
-        if: secrets.gcredentials != null && secrets.drive_folder != null
         with:
           credentials: ${{ secrets.gcredentials }}
           filename: ${{ steps.rename_doc.outputs.main_doc }}
