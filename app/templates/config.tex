@@ -1,3 +1,5 @@
+% !TEX root = ./root.tex
+
 % Modulo spaces
 
 \renewcommand{\pod}[1]{\allowbreak\mathchoice
@@ -16,21 +18,21 @@
 }
 
 \theoremstyle{plain}
-\newtheorem{theorem}{Theorem}
+\newtheorem{base_theorem}{BaseTheorem}
 
-\autotheorem{thm}{theorem}{Theorem}
-\autotheorem{lem}{theorem}{Lemma}
-\autotheorem{prop}{theorem}{Proposition}
-\autotheorem{cor}{theorem}{Corollary}
-\autotheorem{fact}{theorem}{Fact}
+\autotheorem{theorem}{base_theorem}{Theorem}
+\autotheorem{lemma}{base_theorem}{Lemma}
+\autotheorem{proposition}{base_theorem}{Proposition}
+\autotheorem{corollary}{base_theorem}{Corollary}
+\autotheorem{fact}{base_theorem}{Fact}
 
 
 \theoremstyle{definition}
-\autotheorem{defn}{theorem}{Definition}
-\autotheorem{exm}{theorem}{Example}
+\autotheorem{definition}{base_theorem}{Definition}
+\autotheorem{example}{base_theorem}{Example}
 
 \theoremstyle{remark}
-\autotheorem{rem}{theorem}{Remark}
+\autotheorem{remark}{base_theorem}{Remark}
 
 \newtheoremstyle{case}%
   {\topsep}%
@@ -44,10 +46,5 @@
 
 \theoremstyle{case}
 \newtheorem{case}{Case}
-\counterwithin*{case}{theorem}
+\counterwithin*{case}{base_theorem}
 \providecommand*{\caseautorefname}{Case}
-
-<% if (locals.hasAppendix) { -%>
-\AtAppendix{\counterwithin{theorem}{section}}
-\AtAppendix{\counterwithin{equation}{section}}
-<% } -%>
