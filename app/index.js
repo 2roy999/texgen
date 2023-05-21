@@ -1,6 +1,13 @@
+const path = require('path')
 const Generator = require('yeoman-generator')
 
 module.exports = class extends Generator {
+  constructor (args, opts) {
+    super(args, opts)
+
+    this.argument('directory', { type: String, default: '.', required: false })
+  }
+
   async run () {
     const props = await this.prompt([
       {
@@ -84,6 +91,8 @@ module.exports = class extends Generator {
       }
     }
 
+    const directory = this.options.directory
+
     templates.map(template => {
       const { src, dest } = (typeof template === 'string')
         ? { src: template, dest: template }
@@ -91,7 +100,7 @@ module.exports = class extends Generator {
 
       return this.fs.copyTpl(
         this.templatePath(src),
-        this.destinationPath(dest),
+        this.destinationPath(directory, dest),
         props
       )
     })
