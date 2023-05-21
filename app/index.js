@@ -1,15 +1,36 @@
 const path = require('path')
 const Generator = require('yeoman-generator')
 
+const DEFAULT_HISTORY_FILE_NAME = '.texgen_history'
+
+function normalize (templates) {
+  return templates.map(template =>
+    (typeof template === 'string')
+      ? { src: template, dest: template }
+      : template
+  )
+}
+
 module.exports = class extends Generator {
   constructor (args, opts) {
     super(args, opts)
 
     this.argument('directory', { type: String, default: '.', required: false })
+    this.option('historyFile', { type: String, default: DEFAULT_HISTORY_FILE_NAME })
   }
 
-  async run () {
-    const props = await this.prompt([
+  init_run () {
+    this.props = {}
+    this.templates = []
+    this.dummy_files = []
+    this.record = {}
+
+    this.destinationRoot(this.options.directory)
+    this.history = this.readDestinationJSON(this.options.historyFile, {})
+  }
+
+  async prompt_init_properties () {
+    const newProps = await this.prompt([
       {
         type: 'list',
         name: 'type',
@@ -35,22 +56,30 @@ module.exports = class extends Generator {
         store: true
       }
     ])
+    Object.assign(this.props, newProps)
+  }
 
-    const templates = [
+  async run () {
+    const props = this.props
+
+    this.templates.push(
       { src: 'github/workflows/main.yml', dest: '.github/workflows/main.yml' },
       { src: 'gitignore', dest: '.gitignore' },
       'config.tex',
       'shortcuts.tex'
-    ]
+    )
 
     if (props.type === 'article') {
-      templates.push(
-        { src: 'root.tex', dest: 'root.tex' },
+      this.templates.push(
+        { src: 'root.tex', dest: 'root.tex' }
+      )
+
+      this.dummy_files.push(
         'abstract.tex',
         'acknowledgments.tex',
         'introduction.tex',
-        'main.tex',
         'preliminaries.tex',
+        'main.tex',
         'main.bib'
       )
 
@@ -69,40 +98,58 @@ module.exports = class extends Generator {
       props.hasBiblography = true
 
       if (hasAppendix) {
-        templates.push('appendix.tex')
+        this.templates.push('appendix.tex')
       }
     } else if (props.type === 'notes') {
-      templates.push({ src: 'root.tex', dest: 'main.tex' })
+      this.templates.push({ src: 'root.tex', dest: 'main.tex' })
       props.root_file = 'main.tex'
 
-      const { hasBiblography } = await this.prompt([
+      const { hasBibliography } = await this.prompt([
         {
           type: 'confirm',
-          name: 'hasBiblography',
+          name: 'hasBibliography',
           message: 'Does the notes has biblography?',
           default: true
         }
       ])
 
-      props.hasBiblography = hasBiblography
+      props.hasBiblography = hasBibliography
 
-      if (hasBiblography) {
-        templates.push('main.bib')
+      if (hasBibliography) {
+        this.templates.push('main.bib')
       }
     }
 
-    const directory = this.options.directory
-
-    templates.map(template => {
+    this.templates.map(template => {
       const { src, dest } = (typeof template === 'string')
         ? { src: template, dest: template }
         : template
 
       return this.fs.copyTpl(
         this.templatePath(src),
-        this.destinationPath(directory, dest),
+        this.destinationPath(dest),
         props
       )
     })
+  }
+
+  copy_dummy_files () {
+    this.record.dummy = {}
+
+    normalize(this.dummy_files).forEach(({ src, dest }) => {
+      this.record.dummy[src] = true
+
+      if (!this.history.dummy?.[src]) {
+        this.fs.copyTpl(
+          this.templatePath(src),
+          this.destinationPath(dest),
+          this.props
+        )
+      }
+    })
+  }
+
+  create_history_record () {
+    this.writeDestinationJSON(this.options.historyFile, this.record, null, '')
   }
 }
