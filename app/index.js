@@ -1,4 +1,3 @@
-const path = require('path')
 const Generator = require('yeoman-generator')
 
 const DEFAULT_HISTORY_FILE_NAME = '.texgen_history'
@@ -16,17 +15,17 @@ module.exports = class extends Generator {
     super(args, opts)
 
     this.argument('directory', { type: String, default: '.', required: false })
-    this.option('historyFile', { type: String, default: DEFAULT_HISTORY_FILE_NAME })
+    this.option('history-file', { type: String, default: DEFAULT_HISTORY_FILE_NAME })
   }
 
-  init_run () {
+  async init_run () {
     this.props = {}
     this.templates = []
     this.dummy_files = []
     this.record = {}
 
     this.destinationRoot(this.options.directory)
-    this.history = this.readDestinationJSON(this.options.historyFile, {})
+    this.history = this.readDestinationJSON(this.options['history-file'], {})
   }
 
   async prompt_init_properties () {
@@ -59,67 +58,72 @@ module.exports = class extends Generator {
     Object.assign(this.props, newProps)
   }
 
-  async run () {
+  async main () {
     const props = this.props
 
+    if (props.type === 'article') {
+      await this._configure_article()
+    } else if (props.type === 'notes') {
+      await this._configure_notes()
+    }
+  }
+
+  async _configure_article () {
     this.templates.push(
-      { src: 'github/workflows/main.yml', dest: '.github/workflows/main.yml' },
-      { src: 'gitignore', dest: '.gitignore' },
-      'config.tex',
-      'shortcuts.tex'
+      { src: 'root.tex', dest: 'root.tex' }
+    )
+    this.props.root_file = 'root.tex'
+
+    this.dummy_files.push(
+      'abstract.tex',
+      'acknowledgments.tex',
+      'introduction.tex',
+      'preliminaries.tex',
+      'main.tex'
     )
 
-    if (props.type === 'article') {
-      this.templates.push(
-        { src: 'root.tex', dest: 'root.tex' }
-      )
-
-      this.dummy_files.push(
-        'abstract.tex',
-        'acknowledgments.tex',
-        'introduction.tex',
-        'preliminaries.tex',
-        'main.tex',
-        'main.bib'
-      )
-
-      props.root_file = 'root.tex'
-
-      const { hasAppendix } = await this.prompt([
-        {
-          type: 'confirm',
-          name: 'hasAppendix',
-          message: 'Does the article has appendix?',
-          default: false
-        }
-      ])
-
-      props.hasAppendix = hasAppendix
-      props.hasBiblography = true
-
-      if (hasAppendix) {
-        this.templates.push('appendix.tex')
+    const { hasAppendix } = await this.prompt([
+      {
+        type: 'confirm',
+        name: 'hasAppendix',
+        message: 'Does the article has appendix?',
+        default: false
       }
-    } else if (props.type === 'notes') {
-      this.templates.push({ src: 'root.tex', dest: 'main.tex' })
-      props.root_file = 'main.tex'
+    ])
 
-      const { hasBibliography } = await this.prompt([
-        {
-          type: 'confirm',
-          name: 'hasBibliography',
-          message: 'Does the notes has biblography?',
-          default: true
-        }
-      ])
+    this.props.hasAppendix = hasAppendix
+    this.props.hasBibliography = true
+  }
 
-      props.hasBiblography = hasBibliography
+  async _configure_notes () {
+    this.templates.push({ src: 'root.tex', dest: 'main.tex' })
+    this.props.root_file = 'main.tex'
 
-      if (hasBibliography) {
-        this.templates.push('main.bib')
+    const { hasBibliography } = await this.prompt([
+      {
+        type: 'confirm',
+        name: 'hasBibliography',
+        message: 'Does the notes has biblography?',
+        default: true
       }
+    ])
+
+    this.props.hasBibliography = hasBibliography
+  }
+
+  configure_appendix () {
+    if (this.props.hasAppendix) {
+      this.dummy_files.push('appendix.tex')
     }
+  }
 
+  configure_bibliography () {
+    if (this.props.hasBibliography) {
+      this.dummy_files.push('main.bib')
+    }
+  }
+
+  copy_templates () {
     this.templates.map(template => {
       const { src, dest } = (typeof template === 'string')
         ? { src: template, dest: template }
@@ -128,7 +132,7 @@ module.exports = class extends Generator {
       return this.fs.copyTpl(
         this.templatePath(src),
         this.destinationPath(dest),
-        props
+        this.props
       )
     })
   }
@@ -150,6 +154,6 @@ module.exports = class extends Generator {
   }
 
   create_history_record () {
-    this.writeDestinationJSON(this.options.historyFile, this.record, null, '')
+    this.writeDestinationJSON(this.options['history-file'], this.record, null, '')
   }
 }
