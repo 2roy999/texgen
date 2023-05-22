@@ -7,8 +7,7 @@
   "author": "Roy Shmueli",
   "license": "MIT",
   "scripts": {
-    "lint": "eslint app/**.js",
-    "ci": "yarn lint"
+    "lint": "eslint app/**.js"
   },
   "bin": {
     "texgen": "./index.js"
