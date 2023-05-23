@@ -113,17 +113,19 @@ module.exports = class extends Generator {
     this.props.hasBibliography = hasBibliography
   }
 
-  async configureConfigFile () {
-    const configSections = Object.fromEntries([
-      { prettyName: 'Modulo spaces', file: 'modulo_spaces.tex' },
-      { prettyName: 'Theorem definitions', file: 'theorems_definitions.tex' }
-    ]
-      .map(({ prettyName, file }) => {
+  _buildModularFile ({
+    dest,
+    modulesDir,
+    modules,
+    projectHeader
+  }) {
+    const configSections = Object.fromEntries(
+      modules.map(prettyName => {
         const name = prettyName.toLowerCase().replace(/\s+/g, '_')
         const header = `%% ${prettyName}`
         const content = [
           EMPTY_LINE,
-          this.readTemplate(`configs/${file}`).trim(),
+          this.readTemplate(`${modulesDir}/${name}.tex`).trim(),
           EMPTY_LINE,
           EMPTY_LINE
         ].join('\n')
@@ -132,9 +134,10 @@ module.exports = class extends Generator {
 
         return { name, hash, header, content }
       })
-      .map(section => [section.name, section]))
+        .map(section => [section.name, section])
+    )
 
-    const [currentOpening, ...currentRawSections] = this.readDestination('config.tex', '')
+    const [currentOpening, ...currentRawSections] = this.readDestination(dest, { defaults: '' })
       .split(/\r?\n(?=%%)/)
 
     const currentSections = currentRawSections
@@ -157,10 +160,10 @@ module.exports = class extends Generator {
 
     if (this.history.configs === undefined) {
       newSections.push({
-        header: '%% Project configs',
+        header: `%% ${projectHeader}`,
         content: [
           EMPTY_LINE,
-          this.readTemplate('configs/project.tex').trim(),
+          this.readTemplate(`${modulesDir}/_project.tex`).trim(),
           EMPTY_LINE,
           EMPTY_LINE
         ].join('\n')
@@ -186,7 +189,7 @@ module.exports = class extends Generator {
     const configFileParts = []
 
     if (this.history.configs === undefined) {
-      configFileParts.push(this.readTemplate('configs/opening.tex'))
+      configFileParts.push(this.readTemplate(`${modulesDir}/_opening.tex`))
     } else {
       configFileParts.push(currentOpening)
     }
@@ -200,11 +203,12 @@ module.exports = class extends Generator {
       })
     )
 
+    const filepath = `tmp/${crypto.randomUUID()}.tex`
     const configFileContent = configFileParts.flat().join('\n')
 
-    this.fs.write(this.templatePath('tmp/config.tex'), configFileContent)
+    this.fs.write(this.templatePath(filepath), configFileContent)
     this.templates.push({
-      src: 'tmp/config.tex',
+      src: filepath,
       dest: 'config.tex'
     })
 
@@ -212,6 +216,18 @@ module.exports = class extends Generator {
       Object.values(configSections)
         .map(({ name, hash }) => [name, hash])
     )
+  }
+
+  async configureConfigFile () {
+    this._buildModularFile({
+      dest: 'config.tex',
+      modulesDir: 'configs',
+      projectHeader: 'Project Config',
+      modules: [
+        'Modulo Spaces',
+        'Theorem definitions'
+      ]
+    })
   }
 
   configureAppendix () {
