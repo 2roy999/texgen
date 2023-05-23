@@ -1,5 +1,7 @@
+const crypto = require('crypto')
 const Generator = require('yeoman-generator')
 
+const EMPTY_LINE = ''
 const DEFAULT_HISTORY_FILE_NAME = '.texgen_history'
 
 function normalize (templates) {
@@ -18,7 +20,7 @@ module.exports = class extends Generator {
     this.option('history-file', { type: String, default: DEFAULT_HISTORY_FILE_NAME })
   }
 
-  async init_run () {
+  async initRun () {
     this.props = {}
     this.templates = []
     this.dummy_files = []
@@ -28,7 +30,7 @@ module.exports = class extends Generator {
     this.history = this.readDestinationJSON(this.options['history-file'], {})
   }
 
-  async prompt_init_properties () {
+  async promptInitProperties () {
     const newProps = await this.prompt([
       {
         type: 'list',
@@ -62,13 +64,13 @@ module.exports = class extends Generator {
     const props = this.props
 
     if (props.type === 'article') {
-      await this._configure_article()
+      await this._configureArticle()
     } else if (props.type === 'notes') {
-      await this._configure_notes()
+      await this._configureNotes()
     }
   }
 
-  async _configure_article () {
+  async _configureArticle () {
     this.templates.push(
       { src: 'root.tex', dest: 'root.tex' }
     )
@@ -95,7 +97,7 @@ module.exports = class extends Generator {
     this.props.hasBibliography = true
   }
 
-  async _configure_notes () {
+  async _configureNotes () {
     this.templates.push({ src: 'root.tex', dest: 'main.tex' })
     this.props.root_file = 'main.tex'
 
@@ -111,49 +113,150 @@ module.exports = class extends Generator {
     this.props.hasBibliography = hasBibliography
   }
 
-  configure_appendix () {
+  async configureConfigFile () {
+    const configSections = Object.fromEntries([
+      { prettyName: 'Modulo spaces', file: 'modulo_spaces.tex' },
+      { prettyName: 'Theorem definitions', file: 'theorems_definitions.tex' }
+    ]
+      .map(({ prettyName, file }) => {
+        const name = prettyName.toLowerCase().replace(/\s+/g, '_')
+        const header = `%% ${prettyName}`
+        const content = [
+          EMPTY_LINE,
+          this.readTemplate(`configs/${file}`).trim(),
+          EMPTY_LINE,
+          EMPTY_LINE
+        ].join('\n')
+
+        const hash = crypto.createHash('sha256').update(content, 'utf8').digest('hex')
+
+        return { name, hash, header, content }
+      })
+      .map(section => [section.name, section]))
+
+    const [currentOpening, ...currentRawSections] = this.readDestination('config.tex', '')
+      .split(/\r?\n(?=%%)/)
+
+    const currentSections = currentRawSections
+      .map(raw => {
+        const endOfFirstLine = raw.indexOf('\n')
+        const header = (endOfFirstLine === -1) ? raw : raw.substring(0, endOfFirstLine)
+        const content = (endOfFirstLine === -1) ? '' : raw.substring(endOfFirstLine + 1)
+
+        const name = header.substring(2)
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, '_')
+
+        const hash = crypto.createHash('sha256').update(content, 'utf8').digest('hex')
+
+        return { name, header, hash, content }
+      })
+
+    const newSections = []
+
+    if (this.history.configs === undefined) {
+      newSections.push({
+        header: '%% Project configs',
+        content: [
+          EMPTY_LINE,
+          this.readTemplate('configs/project.tex').trim(),
+          EMPTY_LINE,
+          EMPTY_LINE
+        ].join('\n')
+      })
+    }
+
+    newSections.push(...currentSections
+      .map(section => {
+        const storedHash = this.history.configs?.[section.name]
+
+        if (section.hash === storedHash) {
+          return configSections[section.name]
+        } else {
+          return section
+        }
+      })
+    )
+
+    newSections.push(...Object.values(configSections)
+      .filter(({ name }) => this.history.configs?.[name] === undefined)
+    )
+
+    const configFileParts = []
+
+    if (this.history.configs === undefined) {
+      configFileParts.push(this.readTemplate('configs/opening.tex'))
+    } else {
+      configFileParts.push(currentOpening)
+    }
+
+    configFileParts.push(...newSections
+      .map(section => {
+        return [
+          section.header,
+          section.content
+        ]
+      })
+    )
+
+    const configFileContent = configFileParts.flat().join('\n')
+
+    this.fs.write(this.templatePath('tmp/config.tex'), configFileContent)
+    this.templates.push({
+      src: 'tmp/config.tex',
+      dest: 'config.tex'
+    })
+
+    this.record.configs = Object.fromEntries(
+      Object.values(configSections)
+        .map(({ name, hash }) => [name, hash])
+    )
+  }
+
+  configureAppendix () {
     if (this.props.hasAppendix) {
       this.dummy_files.push('appendix.tex')
     }
   }
 
-  configure_bibliography () {
+  configureBibliography () {
     if (this.props.hasBibliography) {
       this.dummy_files.push('main.bib')
     }
   }
 
-  copy_templates () {
-    this.templates.map(template => {
-      const { src, dest } = (typeof template === 'string')
-        ? { src: template, dest: template }
-        : template
-
-      return this.fs.copyTpl(
-        this.templatePath(src),
-        this.destinationPath(dest),
-        this.props
+  copyTemplates () {
+    normalize(this.templates).map(template => {
+      return this.renderTemplate(
+        template.src,
+        template.dest,
+        { ...this.props, ...template.props }
       )
     })
   }
 
-  copy_dummy_files () {
+  copyDummyFiles () {
     this.record.dummy = {}
 
     normalize(this.dummy_files).forEach(({ src, dest }) => {
       this.record.dummy[src] = true
 
       if (!this.history.dummy?.[src]) {
-        this.fs.copyTpl(
-          this.templatePath(src),
-          this.destinationPath(dest),
-          this.props
-        )
+        this.renderTemplate(src, dest, this.props)
       }
     })
   }
 
-  create_history_record () {
+  createHistoryRecord () {
     this.writeDestinationJSON(this.options['history-file'], this.record, null, '')
+  }
+
+  deleteTmp () {
+    this.fs.delete(this.templatePath('tmp'))
+  }
+
+  check () {
+    this.fs.commit()
   }
 }

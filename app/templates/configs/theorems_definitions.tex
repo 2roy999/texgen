@@ -1,24 +1,3 @@
-% !TEX root = ./root.tex
-
-% Project configs
-
-\title{Put Title Here}\fxerror[layout={index}]{Put Title}
-\author{<%= author %>}
-\address{<%= address %>}
-\email{<%= email %>}
-
-
-% Modulo spaces
-
-\renewcommand{\pod}[1]{\allowbreak\mathchoice
-  {\if@display \mkern 18mu\else \mkern 8mu\fi (#1)}
-  {\if@display \mkern 18mu\else \mkern 8mu\fi (#1)}
-  {\mkern4mu(#1)}
-  {\mkern4mu(#1)}
-}
-
-% Theorems defitions
-
 \newcommand{\autotheorem}[3]{
 \newaliascnt{#1counter}{#2}
 \newtheorem{#1}[#1counter]{#3}
