@@ -20,10 +20,40 @@ module.exports = class extends Generator {
     this.option('history-file', { type: String, default: DEFAULT_HISTORY_FILE_NAME })
   }
 
+  async _prompt (questions) {
+    const promptedAnswers = await this.prompt(
+      questions.map(question => {
+        if (this.history.prompt?.[question.name] !== undefined) {
+          return false
+        } else {
+          return question
+        }
+      })
+        .filter(q => Boolean(q))
+    )
+
+    const answers = Object.fromEntries(
+      questions.map(({ name }) => {
+        if (this.history.prompt?.[name] !== undefined) {
+          return [name, this.history.prompt?.[name]]
+        } else {
+          return [name, promptedAnswers[name]]
+        }
+      })
+    )
+
+    this.record.prompt = this.record.prompt || {}
+    Object.entries(answers).forEach(([name, answer]) => {
+      this.record.prompt[name] = answer
+    })
+
+    return answers
+  }
+
   async initRun () {
     this.props = {}
     this.templates = []
-    this.dummy_files = []
+    this.dummyFiles = []
     this.record = {}
 
     this.destinationRoot(this.options.directory)
@@ -31,7 +61,7 @@ module.exports = class extends Generator {
   }
 
   async promptInitProperties () {
-    const newProps = await this.prompt([
+    const newProps = await this._prompt([
       {
         type: 'list',
         name: 'type',
@@ -76,7 +106,7 @@ module.exports = class extends Generator {
     )
     this.props.root_file = 'root.tex'
 
-    this.dummy_files.push(
+    this.dummyFiles.push(
       'abstract.tex',
       'acknowledgments.tex',
       'introduction.tex',
@@ -84,7 +114,7 @@ module.exports = class extends Generator {
       'main.tex'
     )
 
-    const { hasAppendix } = await this.prompt([
+    const { hasAppendix } = await this._prompt([
       {
         type: 'confirm',
         name: 'hasAppendix',
@@ -101,7 +131,7 @@ module.exports = class extends Generator {
     this.templates.push({ src: 'root.tex', dest: 'main.tex' })
     this.props.root_file = 'main.tex'
 
-    const { hasBibliography } = await this.prompt([
+    const { hasBibliography } = await this._prompt([
       {
         type: 'confirm',
         name: 'hasBibliography',
@@ -119,7 +149,7 @@ module.exports = class extends Generator {
     modules,
     projectHeader
   }) {
-    const configSections = Object.fromEntries(
+    const baseSections = Object.fromEntries(
       modules.map(prettyName => {
         const name = prettyName.toLowerCase().replace(/\s+/g, '_')
         const header = `%% ${prettyName}`
@@ -175,20 +205,20 @@ module.exports = class extends Generator {
         const storedHash = this.history.configs?.[section.name]
 
         if (section.hash === storedHash) {
-          return configSections[section.name] || section
+          return baseSections[section.name] || section
         } else {
           return section
         }
       })
     )
 
-    newSections.push(...Object.values(configSections)
-      .filter(({ name }) => this.history.configs?.[name] === undefined)
+    newSections.push(...Object.values(baseSections)
+      .filter(({ name }) => this.history.modular?.[modulesDir]?.[name] === undefined)
     )
 
     const configFileParts = []
 
-    if (this.history.configs === undefined) {
+    if (this.history.modular?.[modulesDir] === undefined) {
       configFileParts.push(this.readTemplate(`${modulesDir}/_opening.tex`, { defaults: '' }))
     } else {
       configFileParts.push(currentOpening)
@@ -209,8 +239,9 @@ module.exports = class extends Generator {
     this.fs.write(this.templatePath(src), configFileContent)
     this.templates.push({ src, dest })
 
-    this.record.configs = Object.fromEntries(
-      Object.values(configSections)
+    this.record.modular = this.record.modular || {}
+    this.record.modular[modulesDir] = Object.fromEntries(
+      Object.values(baseSections)
         .map(({ name, hash }) => [name, hash])
     )
   }
@@ -244,13 +275,13 @@ module.exports = class extends Generator {
 
   configureAppendix () {
     if (this.props.hasAppendix) {
-      this.dummy_files.push('appendix.tex')
+      this.dummyFiles.push('appendix.tex')
     }
   }
 
   configureBibliography () {
     if (this.props.hasBibliography) {
-      this.dummy_files.push('main.bib')
+      this.dummyFiles.push('main.bib')
     }
   }
 
@@ -267,7 +298,7 @@ module.exports = class extends Generator {
   copyDummyFiles () {
     this.record.dummy = {}
 
-    normalize(this.dummy_files).forEach(({ src, dest }) => {
+    normalize(this.dummyFiles).forEach(({ src, dest }) => {
       this.record.dummy[src] = true
 
       if (!this.history.dummy?.[src]) {
