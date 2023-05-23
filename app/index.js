@@ -163,7 +163,7 @@ module.exports = class extends Generator {
         header: `%% ${projectHeader}`,
         content: [
           EMPTY_LINE,
-          this.readTemplate(`${modulesDir}/_project.tex`).trim(),
+          this.readTemplate(`${modulesDir}/_project.tex`, { defaults: '' }).trim(),
           EMPTY_LINE,
           EMPTY_LINE
         ].join('\n')
@@ -175,7 +175,7 @@ module.exports = class extends Generator {
         const storedHash = this.history.configs?.[section.name]
 
         if (section.hash === storedHash) {
-          return configSections[section.name]
+          return configSections[section.name] || section
         } else {
           return section
         }
@@ -189,7 +189,7 @@ module.exports = class extends Generator {
     const configFileParts = []
 
     if (this.history.configs === undefined) {
-      configFileParts.push(this.readTemplate(`${modulesDir}/_opening.tex`))
+      configFileParts.push(this.readTemplate(`${modulesDir}/_opening.tex`, { defaults: '' }))
     } else {
       configFileParts.push(currentOpening)
     }
@@ -203,14 +203,11 @@ module.exports = class extends Generator {
       })
     )
 
-    const filepath = `tmp/${crypto.randomUUID()}.tex`
+    const src = `tmp/${crypto.randomUUID()}.tex`
     const configFileContent = configFileParts.flat().join('\n')
 
-    this.fs.write(this.templatePath(filepath), configFileContent)
-    this.templates.push({
-      src: filepath,
-      dest: 'config.tex'
-    })
+    this.fs.write(this.templatePath(src), configFileContent)
+    this.templates.push({ src, dest })
 
     this.record.configs = Object.fromEntries(
       Object.values(configSections)
@@ -226,6 +223,21 @@ module.exports = class extends Generator {
       modules: [
         'Modulo Spaces',
         'Theorem definitions'
+      ]
+    })
+  }
+
+  async configureShortcutsFile () {
+    this._buildModularFile({
+      dest: 'shortcuts.tex',
+      modulesDir: 'shortcuts',
+      projectHeader: 'Project Shortcuts',
+      modules: [
+        'Whiteboard Letters',
+        'Delimiters',
+        'Operators',
+        'Others',
+        'Calligraphic Letters'
       ]
     })
   }
