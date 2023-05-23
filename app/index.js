@@ -2,7 +2,7 @@ const crypto = require('crypto')
 const Generator = require('yeoman-generator')
 
 const EMPTY_LINE = ''
-const DEFAULT_HISTORY_FILE_NAME = '.texgen_history'
+const DEFAULT_HISTORY_FILE_NAME = '.texgen.json'
 
 function normalize (templates) {
   return templates.map(template =>
