@@ -39,7 +39,10 @@ rules:
   import/newline-after-import: warn
   import/no-absolute-path: warn
   import/no-dynamic-require: warn
-  import/no-extraneous-dependencies: warn
+  import/no-extraneous-dependencies:
+    - warn
+    - devDependencies:
+        - tests/**/*.js
   import/no-mutable-exports: warn
   import/order:
     - warn
