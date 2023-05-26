@@ -1,7 +1,5 @@
-
-import os from 'os'
 import path from 'path'
-import { runner } from 'clet'
+import { runner, KEYS } from 'clet'
 
 describe('Creating new projects', () => {
 
@@ -13,13 +11,13 @@ describe('Creating new projects', () => {
 
   it('should create a new article project', async function () {
     await runner()
-      .cwd(this.tmpDir, { init: true })
+      .cwd(this.tmpDir, { init: true, clean: true })
       .spawn(this.texgen)
-      .stdin(/❯ article/, '\n')
-      .stdin(/name:/, 'John Doe\n')
-      .stdin(/email:/, 'johndoe@mail.com\n')
-      .stdin(/address:/, 'Institute of Science\n')
-      .stdin(/appendix/, 'n\n')
+      .stdin(/type/, KEYS.ENTER)
+      .stdin(/name:/, 'John Doe')
+      .stdin(/email:/, 'johndoe@mail.com')
+      .stdin(/address:/, 'Institute of Science')
+      .stdin(/appendix/, 'n')
       .code(0)
       .file('.texgen.json', {})
       .file('abstract.tex', /^% !TEX root = .\/root.tex\r?\n/)
@@ -31,6 +29,30 @@ describe('Creating new projects', () => {
       .file('preliminaries.tex', /^% !TEX root = .\/root.tex\r?\n/)
       .file('root.tex', /^\\documentclass/)
       .file('shortcuts.tex', /^% !TEX root = .\/root.tex\r?\n/)
+      .end()
   })
 
+  it('should create a new article project with appendix', async function () {
+    await runner()
+      .cwd(this.tmpDir, { init: true, clean: true })
+      .spawn(this.texgen)
+      .stdin(/type/, KEYS.ENTER)
+      .stdin(/name:/, 'John Doe')
+      .stdin(/email:/, 'johndoe@mail.com')
+      .stdin(/address:/, 'Institute of Science')
+      .stdin(/appendix/, 'y')
+      .code(0)
+      .file('.texgen.json', {})
+      .file('abstract.tex', /^% !TEX root = .\/root.tex\r?\n/)
+      .file('acknowledgements.tex', /^% !TEX root = .\/root.tex\r?\n/)
+      .file('appendix.tex', /^% !TEX root = .\/root.tex\r?\n/)
+      .file('config.tex', /^% !TEX root = .\/root.tex\r?\n/)
+      .file('introduction.tex', /^% !TEX root = .\/root.tex\r?\n/)
+      .file('main.tex', /^% !TEX root = .\/root.tex\r?\n/)
+      .file('main.bib', /@article/)
+      .file('preliminaries.tex', /^% !TEX root = .\/root.tex\r?\n/)
+      .file('root.tex', /^\\documentclass/)
+      .file('shortcuts.tex', /^% !TEX root = .\/root.tex\r?\n/)
+      .end()
+  })
 })

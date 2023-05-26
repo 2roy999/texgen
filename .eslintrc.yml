@@ -10,7 +10,7 @@ plugins:
   - mocha
 
 parserOptions:
-  sourceType: script
+  sourceType: module
 
 rules:
   arrow-parens:
