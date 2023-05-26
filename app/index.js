@@ -108,7 +108,7 @@ module.exports = class extends Generator {
 
     this.dummyFiles.push(
       'abstract.tex',
-      'acknowledgments.tex',
+      'acknowledgements.tex',
       'introduction.tex',
       'preliminaries.tex',
       'main.tex'
