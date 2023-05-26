@@ -11,8 +11,8 @@
     "npm": "^8.6.0"
   },
   "scripts": {
-    "lint": "eslint app/**.js",
-    "ci": "yarn lint"
+    "lint": "eslint index.js app/**/*.js tests/**/*.js",
+    "lint:fix": "eslint index.js app/**/*.js tests/**/*.js --fix"
   },
   "bin": {
     "texgen": "./index.js"
