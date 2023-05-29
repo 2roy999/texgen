@@ -6,7 +6,7 @@ describe('Creating new projects', () => {
   beforeEach(async function () {
     const title = this.currentTest.fullTitle().trim().toLowerCase().replace(/\s+/g, '-')
     this.tmpDir = path.resolve('./tmp', title)
-    this.texgen = path.resolve('.', 'index.js')
+    this.texgen = path.resolve('.', 'index.mjs')
   })
 
   it('should create a new article project', async function () {

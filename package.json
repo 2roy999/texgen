@@ -8,16 +8,20 @@
   "license": "MIT",
   "engines": {
     "node": "18.x",
-    "npm": "^8.6.0"
+    "npm": ">=8.6.0"
   },
   "scripts": {
-    "lint": "eslint index.js app/**/*.js tests/**/*.js",
-    "lint:fix": "eslint index.js app/**/*.js tests/**/*.js --fix"
+    "lint": "eslint index.js app/**/*.[m]js tests/**/*.[m]js",
+    "lint:fix": "eslint index.js app/**/*.[m]js tests/**/*.[m]js --fix"
   },
   "bin": {
-    "texgen": "./index.js"
+    "texgen": "./index.mjs"
   },
   "dependencies": {
+    "ejs": "^3.1.9",
+    "inquirer": "^9.2.6",
+    "mem-fs": "^2.3.0",
+    "mem-fs-editor": "^10.0.2",
     "yeoman-environment": "^3.10.0",
     "yeoman-generator": "^5.7.0"
   },
