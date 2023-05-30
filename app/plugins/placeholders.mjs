@@ -1,5 +1,5 @@
 import TemplatesPlugin from './templates.mjs'
-import LocalStoragePlugin from './local-storage.mjs'
+import { LocalStoragePlugin } from './storage.mjs'
 
 export default class PlaceholdersPlugin {
   dependencies = [TemplatesPlugin, LocalStoragePlugin]

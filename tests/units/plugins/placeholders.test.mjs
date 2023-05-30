@@ -13,8 +13,8 @@ describe('placeholders plugin', function () {
       default: 'templates plugin'
     })
 
-    await mockImport('../../../app/plugins/local-storage.mjs', {
-      default: 'local storage plugin'
+    await mockImport('../../../app/plugins/storage.mjs', {
+      LocalStoragePlugin: 'local storage plugin'
     })
 
     const { default: PlaceholdersPlugin } = await import('../../../app/plugins/placeholders.mjs')
