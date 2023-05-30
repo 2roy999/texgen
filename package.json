@@ -11,8 +11,9 @@
     "npm": ">=8.6.0"
   },
   "scripts": {
-    "lint": "eslint index.js app/**/*.[m]js tests/**/*.[m]js",
-    "lint:fix": "eslint index.js app/**/*.[m]js tests/**/*.[m]js --fix"
+    "lint": "eslint index.mjs app/**/*.[m]js tests/**/*.[m]js",
+    "lint:fix": "eslint index.mjs app/**/*.[m]js tests/**/*.[m]js --fix",
+    "test": "mocha tests/**/*.[m]js"
   },
   "bin": {
     "texgen": "./index.mjs"
@@ -21,12 +22,11 @@
     "ejs": "^3.1.9",
     "inquirer": "^9.2.6",
     "mem-fs": "^2.3.0",
-    "mem-fs-editor": "^10.0.2",
-    "yeoman-environment": "^3.10.0",
-    "yeoman-generator": "^5.7.0"
+    "mem-fs-editor": "^10.0.2"
   },
   "devDependencies": {
     "chai": "^4.3.7",
+    "chai-as-promised": "^7.1.1",
     "clet": "^1.0.1",
     "eslint": "^8.41.0",
     "eslint-config-standard": "^17.0.0",
@@ -37,6 +37,10 @@
     "eslint-plugin-n": "^15.2.5",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.1.1",
-    "mocha": "^10.2.0"
+    "mocha": "^10.2.0",
+    "sinon": "^15.1.0",
+    "sinon-chai": "^3.7.0",
+    "testdouble": "^3.18.0",
+    "testdouble-chai": "^0.5.0"
   }
 }
