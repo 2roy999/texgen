@@ -19,7 +19,8 @@ export default class TemplatesPlugin {
         const templateContent = template.content ?? await this._readTemplate(template.src)
         const renderedContent = ejs.render(templateContent, { ...this._getGlobalProps(), ...template.props })
         await this._writeDestination(template.dest, renderedContent)
-      }
+      },
+      normalizeTemplate: this._normalizeTemplate
     }
   }
 
