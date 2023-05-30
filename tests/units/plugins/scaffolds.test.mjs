@@ -1,7 +1,8 @@
 
 function dummmyService () {
   return {
-    copyTemplate: sinon.stub()
+    copyTemplate: sinon.stub(),
+    normalizeTemplate: sinon.stub()
   }
 }
 
@@ -28,7 +29,28 @@ describe('scaffolds plugin', function () {
 
     await this.plugin.end()
 
-    expect(services.copyTemplate).to.have.been.calledWith('scaffold1')
-    expect(services.copyTemplate).to.have.been.calledWith('scaffold2')
+    expect(services.copyTemplate).to.have.been.calledTwice
+  })
+
+  it('should normalize template is invalid when adding a scaffold', async function () {
+    const services = dummmyService()
+    await this.plugin.init(services)
+
+    this.plugin.instance().addScaffold('scaffold')
+
+    expect(services.normalizeTemplate).to.have.been.calledWith('scaffold')
+  })
+
+  it('should use the normalized templates at the end', async function () {
+    const services = dummmyService()
+    await this.plugin.init(services)
+
+    services.normalizeTemplate.returns('normalized scaffold')
+
+    this.plugin.instance().addScaffold('scaffold')
+
+    await this.plugin.end()
+
+    expect(services.copyTemplate).to.have.been.calledWith('normalized scaffold')
   })
 })
