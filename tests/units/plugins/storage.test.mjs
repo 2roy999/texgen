@@ -8,9 +8,7 @@ function dummyRequest (s) {
 }
 
 describe('storage plugins', function () {
-
   describe('local-storage plugin', function () {
-
     function dummyServices () {
       return {
         readDestinationJson: sinon.stub().returns({}),
