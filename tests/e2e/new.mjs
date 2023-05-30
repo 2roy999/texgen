@@ -1,8 +1,7 @@
 import path from 'path'
 import { runner, KEYS } from 'clet'
 
-describe('Creating new projects', () => {
-
+describe('Creating new projects', function () {
   beforeEach(async function () {
     const title = this.currentTest.fullTitle().trim().toLowerCase().replace(/\s+/g, '-')
     this.tmpDir = path.resolve('./tmp', title)
