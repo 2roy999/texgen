@@ -17,6 +17,7 @@ rules:
     - newIsCap: true
       capIsNew: true
   no-shadow: warn
+  no-return-await: warn
   no-unused-expressions: off
   no-var: warn
   prefer-const: warn
