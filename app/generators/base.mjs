@@ -118,23 +118,4 @@ export default class BaseGenerator extends Generator {
 
     this.addGlobalProp('hasBibliography', hasBibliography)
   }
-
-  async configureConfigFile () {
-    this._buildModularFile()
-  }
-
-  async configureShortcutsFile () {
-    this._buildModularFile({
-      dest: 'shortcuts.tex',
-      modulesDir: 'shortcuts',
-      projectHeader: 'Project Shortcuts',
-      modules: [
-        'Whiteboard Letters',
-        'Delimiters',
-        'Operators',
-        'Others',
-        'Calligraphic Letters'
-      ]
-    })
-  }
 }
