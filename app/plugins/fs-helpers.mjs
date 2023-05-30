@@ -15,11 +15,11 @@ export class DestinationReaderPlugin {
 
   instance () {
     return {
-      readDestination: async (path, ...args) => {
-        return await this._fs.read(join(this._destinationRoot, path), ...args)
+      readDestination: (path, ...args) => {
+        return this._fs.read(join(this._destinationRoot, path), ...args)
       },
-      readDestinationJson: async (path, ...args) => {
-        return await this._fs.readJSON(join(this._destinationRoot, path), ...args)
+      readDestinationJson: (path, ...args) => {
+        return this._fs.readJSON(join(this._destinationRoot, path), ...args)
       }
     }
   }
@@ -38,10 +38,10 @@ export class DestinationWriterPlugin {
 
   instance () {
     return {
-      writeDestination: async (path, ...args) => {
+      writeDestination: (path, ...args) => {
         return this._fs.write(join(this._destinationRoot, path), ...args)
       },
-      writeDestinationJson: async (path, ...args) => {
+      writeDestinationJson: (path, ...args) => {
         return this._fs.writeJSON(join(this._destinationRoot, path), ...args)
       }
     }
@@ -61,11 +61,11 @@ export class TemplatesReaderPlugin {
 
   instance () {
     return {
-      readTemplate: async (path, ...args) => {
-        return await this._fs.read(join(this._templatesRoot, path), ...args)
+      readTemplate: (path, ...args) => {
+        return this._fs.read(join(this._templatesRoot, path), ...args)
       },
-      readTemplateJson: async (path, ...args) => {
-        return await this._fs.readJSON(join(this._templatesRoot, path), ...args)
+      readTemplateJson: (path, ...args) => {
+        return this._fs.readJSON(join(this._templatesRoot, path), ...args)
       }
     }
   }
