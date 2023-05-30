@@ -91,7 +91,7 @@ export default class ModularFileGenerator extends Generator {
       })
   }
 
-  createNewProjectSectionIfNeeded (newSections) {
+  createNewProjectSectionIfNeeded () {
     if (this.getStorage().get('exists') === undefined) {
       return {
         header: `%% ${this._projectHeader}`,

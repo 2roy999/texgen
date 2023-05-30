@@ -40,7 +40,6 @@ export default class Generator {
       throw new Error('Template must be a string or an object')
     }
 
-
     if (noContent && template.content !== undefined) {
       throw new Error('Template content is not allowed')
     }
