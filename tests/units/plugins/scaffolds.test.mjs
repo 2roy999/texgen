@@ -32,7 +32,7 @@ describe('scaffolds plugin', function () {
     expect(services.copyTemplate).to.have.been.calledTwice
   })
 
-  it('should normalize template is invalid when adding a scaffold', async function () {
+  it('should normalize template when adding a scaffold', async function () {
     const services = dummmyService()
     await this.plugin.init(services)
 
