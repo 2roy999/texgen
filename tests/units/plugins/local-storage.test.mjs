@@ -7,11 +7,11 @@ describe('local-storage plugin', function () {
     })
 
     const { default: LocalStoragePlugin } = await import('../../../app/plugins/local-storage.mjs')
-    this.localStoragePlugin = new LocalStoragePlugin({ localStoragePath: 'localStoragePath' })
+    this.plugin = new LocalStoragePlugin({ localStoragePath: 'localStoragePath' })
   })
 
   it('should have destination reader and writer plugins as dependencies', async function () {
-    expect(this.localStoragePlugin.dependencies).to.be.deep.equal([
+    expect(this.plugin.dependencies).to.be.deep.equal([
       'destination reader plugin',
       'destination writer plugin'
     ])
@@ -22,7 +22,7 @@ describe('local-storage plugin', function () {
       readDestinationJson: sinon.stub().returns({})
     }
 
-    await this.localStoragePlugin.init(services)
+    await this.plugin.init(services)
 
     expect(services.readDestinationJson).to.have.been.calledWith('localStoragePath', {})
   })
@@ -35,15 +35,15 @@ describe('local-storage plugin', function () {
         }
       })
     }
-    await this.localStoragePlugin.init(services)
+    await this.plugin.init(services)
 
-    expect(this.localStoragePlugin.instance({
+    expect(this.plugin.instance({
       type: 'type',
       name: 'name',
       id: 'id'
     }).localStorage).to.be.deep.equal({ foo: 'bar' })
 
-    expect(this.localStoragePlugin.instance({
+    expect(this.plugin.instance({
       type: 'type2',
       name: 'name2',
       id: 'id2'
@@ -55,21 +55,21 @@ describe('local-storage plugin', function () {
       readDestinationJson: sinon.stub().returns({}),
       writeDestinationJson: sinon.spy()
     }
-    await this.localStoragePlugin.init(services)
+    await this.plugin.init(services)
 
-    this.localStoragePlugin.instance({
+    this.plugin.instance({
       type: 'type1',
       name: 'name1',
       id: 'id1'
     }).localStorage.foo = 'bar'
 
-    this.localStoragePlugin.instance({
+    this.plugin.instance({
       type: 'type2',
       name: 'name2',
       id: 'id2'
     }).localStorage.foo2 = 'bar2'
 
-    await this.localStoragePlugin.end()
+    await this.plugin.end()
 
     expect(services.writeDestinationJson).to.have.been.calledWith('localStoragePath', {
       'type1-name1-id1': {
@@ -85,15 +85,15 @@ describe('local-storage plugin', function () {
     const services = {
       readDestinationJson: sinon.stub().returns({})
     }
-    await this.localStoragePlugin.init(services)
+    await this.plugin.init(services)
 
-    const instance1 = this.localStoragePlugin.instance({
+    const instance1 = this.plugin.instance({
       type: 'type1',
       name: 'name1',
       id: 'id1'
     })
 
-    const instance2 = this.localStoragePlugin.instance({
+    const instance2 = this.plugin.instance({
       type: 'type2',
       name: 'name2',
       id: 'id2'
