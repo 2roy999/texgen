@@ -35,6 +35,19 @@ global.mockImport = async (path, mock) => {
   return returnValue
 }
 
+function dynamicNamedFunction (name, fn) {
+  // eslint-disable-next-line no-new-func
+  return new Function('fn', `return function ${name} () { return fn.apply(this, arguments) }`)(fn)
+}
+
+global.createDummyConstructor = name => {
+  const func = sinon.fake(dynamicNamedFunction(name, function () {
+    func.$ = Object.assign(this, func.$)
+  }))
+
+  return func
+}
+
 export const mochaHooks = {
   afterEach () {
     td.reset()

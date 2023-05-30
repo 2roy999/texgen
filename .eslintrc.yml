@@ -77,6 +77,7 @@ overrides:
       expect: true
       mockImport: true
       sinon: true
+      createDummyConstructor: true
 
     rules:
       chai-expect/no-inner-compare: error
