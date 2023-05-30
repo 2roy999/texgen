@@ -8,12 +8,12 @@ import Storage from './storage.mjs'
 import FsReader from './reader.mjs'
 
 export default class Runner {
-  constructor (GeneratorClass, props) {
+  constructor (GeneratorClass, args, options) {
     this._GeneratorClass = GeneratorClass
-    this._templatesRoot = props.templatesRoot
-    this._destinationRoot = props.destinationRoot
-    this._localStoragePath = props.localStoragePath
-    this._globalStoragePath = props.globalStoragePath
+    this._templatesRoot = options.templatesRoot
+    this._destinationRoot = options.destinationRoot
+    this._localStoragePath = options.localStoragePath
+    this._globalStoragePath = options.globalStoragePath
   }
 
   async run () {
