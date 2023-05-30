@@ -38,9 +38,14 @@ export default class PluginsInjector {
   constructor (options) {
     this._plugins = {}
     this._options = options
+    this._status = 'uninitialized'
   }
 
   register (Plugin) {
+    if (this._status !== 'uninitialized') {
+      throw new Error('Cannot register plugins after initialization')
+    }
+
     if (this._plugins[Plugin.name]) {
       return
     }
@@ -70,17 +75,28 @@ export default class PluginsInjector {
   }
 
   async init () {
+    if (this._status !== 'uninitialized') {
+      throw new Error('Cannot initialize injector, already initialized')
+    }
+    this._status = 'initialized'
     this._determineInvocationOrder()
 
     for (const plugin of this._invocationOrder) {
       if (plugin.init) {
-        const injection = this.getInjection(plugin)
-        await plugin.init(injection)
+        // eslint-disable-next-line no-await-in-loop -- we need to wait for each plugin to initialize
+        await plugin.init(this.getInjection(plugin))
       }
     }
   }
 
   getInjection (service) {
+    if (this._status === 'uninitialized') {
+      throw new Error('Cannot get injection before initialization')
+    }
+    if (this._status === 'finalized') {
+      throw new Error('Cannot get injection after finalization')
+    }
+
     return Object.assign({}, ...service.dependencies
       .map(d => this._plugins[d.name].instance(this._getInjectionRequest(service))))
   }
@@ -97,8 +113,17 @@ export default class PluginsInjector {
   }
 
   async finalize () {
+    if (this._status === 'uninitialized') {
+      throw new Error('Cannot finalize injector before initialization')
+    }
+    if (this._status === 'finalized') {
+      throw new Error('Cannot finalize injector, already finalized')
+    }
+    this._status = 'finalized'
+
     for (const plugin of this._invocationOrder.reverse()) {
       if (plugin.end) {
+        // eslint-disable-next-line no-await-in-loop -- we need to wait for each plugin to finalize
         await plugin.end()
       }
     }

@@ -298,4 +298,45 @@ describe('plugins injector', function () {
     expect(fooPlugin).to.have.been.calledWithNew
     expect(barPlugin).to.have.been.calledWithNew
   })
+
+  it('should throw error if asked for injection before initialized', async function () {
+    expect(() => this.injector.getInjection({})).to.throw('before initialization')
+  })
+
+  it('should throw error if finalized before initialized', async function () {
+    await expect(this.injector.finalize()).to.be.rejectedWith('before initialization')
+  })
+
+  it('should throw error if initialized twice', async function () {
+    await this.injector.init()
+
+    await expect(this.injector.init()).to.be.rejectedWith('already initialized')
+  })
+
+  it('should throw error if registering plugins after initialized', async function () {
+    await this.injector.init()
+
+    expect(() => this.injector.register(createDummyPlugin('foo'))).to.throw('after initialization')
+  })
+
+  it('should throw error if finalized twice', async function () {
+    await this.injector.init()
+    await this.injector.finalize()
+
+    await expect(this.injector.finalize()).to.be.rejectedWith('already finalized')
+  })
+
+  it('should throw error if register plugin after finalized', async function () {
+    await this.injector.init()
+    await this.injector.finalize()
+
+    expect(() => this.injector.register(createDummyPlugin('foo'))).to.throw()
+  })
+
+  it('should throw error if asked for injection after finalized', async function () {
+    await this.injector.init()
+    await this.injector.finalize()
+
+    expect(() => this.injector.getInjection({})).to.throw('after finalization')
+  })
 })
