@@ -1,7 +1,7 @@
 import crypto from 'crypto'
 
 function serviceType (service) {
-  if (service.run !== undefined) {
+  if (typeof service === 'function') {
     return 'generator'
   } else if (service.instance !== undefined) {
     return 'plugin'
@@ -61,7 +61,13 @@ export default class PluginsInjector {
   }
 
   registerDependencies (service) {
-    service.dependencies.forEach(d => this.register(d))
+    if (service.dependencies) {
+      service.dependencies.forEach(d => this.register(d))
+    }
+
+    if (service.subs) {
+      Object.values(service.subs).forEach(s => this.registerDependencies(s))
+    }
   }
 
   _determineInvocationOrder () {
@@ -103,7 +109,7 @@ export default class PluginsInjector {
 
   _getInjectionRequest (service) {
     const type = serviceType(service)
-    const name = service.constructor.name
+    const name = service.name ?? service.constructor.name
 
     return {
       id: crypto.createHash('sha256').update(`${type}:${name}`).digest('hex'),

@@ -2,31 +2,31 @@ import PluginsInjector from '../../app/injector.mjs'
 
 const { same, typeOf } = sinon.match
 
-function createDummyPlugin (name) {
-  const func = createDummyConstructor(name)
+describe('plugins injector', function () {
+  function createDummyPlugin (name) {
+    const func = createDummyConstructor(name)
 
-  func.$ = {
-    dependencies: [],
-    init: sinon.spy(),
-    instance: sinon.stub(),
-    end: sinon.spy()
+    func.$ = {
+      dependencies: [],
+      init: sinon.spy(),
+      instance: sinon.stub(),
+      end: sinon.spy()
+    }
+
+    return func
   }
 
-  return func
-}
+  function createDummyPluginTree () {
+    const plugins = new Array(5).fill(null).map((_, i) => createDummyPlugin(`plugin${i}`))
 
-function createDummyPluginTree () {
-  const plugins = new Array(5).fill(null).map((_, i) => createDummyPlugin(`plugin${i}`))
+    plugins[0].$.dependencies = [plugins[1], plugins[2], plugins[4]]
+    plugins[1].$.dependencies = [plugins[3]]
+    plugins[2].$.dependencies = [plugins[3], plugins[4]]
+    plugins[3].$.dependencies = [plugins[4]]
 
-  plugins[0].$.dependencies = [plugins[1], plugins[2], plugins[4]]
-  plugins[1].$.dependencies = [plugins[3]]
-  plugins[2].$.dependencies = [plugins[3], plugins[4]]
-  plugins[3].$.dependencies = [plugins[4]]
+    return plugins
+  }
 
-  return plugins
-}
-
-describe('plugins injector', function () {
   beforeEach(function () {
     this.options = {}
     this.injector = new PluginsInjector(this.options)
@@ -60,10 +60,9 @@ describe('plugins injector', function () {
 
     await this.injector.init()
 
-    this.injector.getInjection({
-      dependencies: [plugins[0]],
-      run: async () => {}
-    })
+    this.injector.getInjection(Object.assign(() => {}, {
+      dependencies: [plugins[0]]
+    }))
 
     for (const plugin of plugins) {
       expect(plugin.$.init).to.have.been.calledBefore(plugin.$.instance)
@@ -198,10 +197,10 @@ describe('plugins injector', function () {
   })
 
   it('should throw error when registering a non-plugin service', async function () {
-    const generator = createDummyConstructor('DummyGenerator')
-    generator.$ = {
-      dependencies: [],
-      run: async () => {}
+    const generator = function () {
+      return Object.assign(() => {}, {
+        dependencies: []
+      })
     }
 
     expect(() => this.injector.register(generator)).to.throw('not a plugin')
@@ -216,13 +215,10 @@ describe('plugins injector', function () {
 
     await this.injector.init()
 
-    this.injector.getInjection({
-      constructor: {
-        name: 'DummyGenerator'
-      },
-      dependencies: [fooPlugin, barPlugin],
-      run: async () => {}
-    })
+    // eslint-disable-next-line mocha/prefer-arrow-callback -- this is needed in this case for the name of the function
+    this.injector.getInjection(Object.assign(function DummyGenerator () {}, {
+      dependencies: [fooPlugin, barPlugin]
+    }))
 
     expect(fooPlugin.$.instance).to.have.been.calledWith({
       type: 'generator',
@@ -293,6 +289,23 @@ describe('plugins injector', function () {
 
     this.injector.registerDependencies({
       dependencies: [fooPlugin, barPlugin]
+    })
+
+    expect(fooPlugin).to.have.been.calledWithNew
+    expect(barPlugin).to.have.been.calledWithNew
+  })
+
+  it('should register dependencies of sub-services', async function () {
+    const fooPlugin = createDummyPlugin('foo')
+    const barPlugin = createDummyPlugin('bar')
+
+    this.injector.registerDependencies({
+      dependencies: [fooPlugin],
+      subs: {
+        baz: {
+          dependencies: [barPlugin]
+        }
+      }
     })
 
     expect(fooPlugin).to.have.been.calledWithNew
