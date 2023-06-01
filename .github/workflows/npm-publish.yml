@@ -5,7 +5,7 @@ name: Node.js Package
 
 on:
   push:
-    branches: 'main'
+  pull_request:
 
 jobs:
   build:
@@ -17,9 +17,11 @@ jobs:
           node-version: 18
       - run: npm install
       - run: npm run lint
+      - run: npm run test
 
   publish-npm:
     needs: build
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
