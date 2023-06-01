@@ -1,4 +1,4 @@
-function dummyServices (name) {
+function dummyServices () {
   return {
     localStorage: {},
     globalStorage: {}
