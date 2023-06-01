@@ -291,7 +291,7 @@ describe('plugins injector', function () {
 
     await this.injector.init()
 
-    const injection = await this.injector.getInjection(function DummyGenerator () {})
+    const injection = await this.injector.getInjection(() => {})
 
     expect(fooPlugin.$.init).to.have.been.calledWith({})
     expect(injection).to.deep.equal({})

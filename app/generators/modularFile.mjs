@@ -1,7 +1,5 @@
 import crypto from 'crypto'
 
-import Generator from './generator.mjs'
-
 import ScaffoldsPlugin from '../plugins/scaffolds.mjs'
 import { LocalStoragePlugin } from '../plugins/storage.mjs'
 import { DestinationReaderPlugin, TemplatesReaderPlugin } from '../plugins/fs-helpers.mjs'

@@ -17,7 +17,7 @@ describe('templates plugin', function () {
     })
 
     await mockImport('../../../app/plugins/properties.mjs', {
-      PropertiesPlugin: 'properties plugin'
+      default: 'properties plugin'
     })
 
     this.ejsMock = await mockImport('ejs')
