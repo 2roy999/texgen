@@ -13,7 +13,7 @@
   "scripts": {
     "lint": "eslint index.mjs app/**/*.[m]js tests/**/*.[m]js",
     "lint:fix": "eslint index.mjs app/**/*.[m]js tests/**/*.[m]js --fix",
-    "test": "mocha tests/**/*.[m]js"
+    "test": "mocha 'tests/**/*.test.[m]js'"
   },
   "bin": {
     "texgen": "./index.mjs"
