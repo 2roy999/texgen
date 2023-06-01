@@ -34,7 +34,7 @@ async function modularFileGenerator ({
       createSectionParts(newSections)
     ]
 
-    const fileContent = fileParts.join('\n')
+    const fileContent = fileParts.flat().join('\n')
 
     this.addScaffold({
       content: fileContent,
