@@ -1,9 +1,10 @@
 import ejs from 'ejs'
 
 import { DestinationWriterPlugin, TemplatesReaderPlugin } from './fs-helpers.mjs'
+import PropertiesPlugin from './properties.mjs'
 
 export default class TemplatesPlugin {
-  dependencies = [DestinationWriterPlugin, TemplatesReaderPlugin]
+  dependencies = [DestinationWriterPlugin, PropertiesPlugin, TemplatesReaderPlugin]
 
   async init ({ readTemplate, writeDestination, getAllGlobalProperties }) {
     this._readTemplate = readTemplate
@@ -33,7 +34,7 @@ export default class TemplatesPlugin {
       throw new Error('Template cannot have both content and src')
     }
 
-    if (!template.src) {
+    if (!template.src && !template.content) {
       return { ...template, src: template.dest }
     }
 

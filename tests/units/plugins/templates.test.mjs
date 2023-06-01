@@ -27,9 +27,10 @@ describe('templates plugin', function () {
     this.plugin = new TemplatesPlugin({ templatesPath: 'templatesPath' })
   })
 
-  it('should have destination writer and template reader plugins as dependencies', async function () {
+  it('should have destination writer plugin, properties plugin and templates reader plugin as dependencies', async function () {
     expect(this.plugin.dependencies).to.be.deep.equal([
       'destination writer plugin',
+      'properties plugin',
       'templates reader plugin'
     ])
   })
@@ -120,5 +121,15 @@ describe('templates plugin', function () {
 
     await expect(this.plugin.instance().copyTemplate({ content: 'content', src: 'src', dest: 'dest' }))
       .to.be.rejectedWith('Template cannot have both content and src')
+  })
+
+  it('should not change template add src to template with content', async function () {
+    const services = dummyServices()
+    await this.plugin.init(services)
+
+    const normalizedTemplate = await this.plugin.instance()
+      .normalizeTemplate({ content: 'content', dest: 'dest' })
+
+    expect(normalizedTemplate).to.be.deep.equal({ content: 'content', dest: 'dest' })
   })
 })
