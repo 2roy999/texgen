@@ -16,15 +16,22 @@ export default class PlaceholdersPlugin {
   }
 
   instance () {
+    const addPlaceholder = template => {
+      template = this._normalizeTemplate(template)
+
+      if (template.content) {
+        throw new Error('Placeholder templates cannot have content')
+      }
+
+      this._placeholders.push(template)
+    }
+
     return {
-      addPlaceholder: template => {
-        template = this._normalizeTemplate(template)
-
-        if (template.content) {
-          throw new Error('Placeholder templates cannot have content')
+      addPlaceholder,
+      addPlaceholders: templates => {
+        for (const template of templates) {
+          addPlaceholder(template)
         }
-
-        this._placeholders.push(template)
       }
     }
   }

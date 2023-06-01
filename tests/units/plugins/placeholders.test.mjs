@@ -93,4 +93,15 @@ describe('placeholders plugin', function () {
 
     expect(services.localStorage.placeholder).to.be.true
   })
+
+  it('should add multiple placeholders at once', async function () {
+    const services = dummmyService()
+    await this.plugin.init(services)
+
+    this.plugin.instance().addPlaceholders(['placeholder1', 'placeholder2'])
+
+    await this.plugin.end()
+
+    expect(services.copyTemplate).to.have.been.calledTwice
+  })
 })
