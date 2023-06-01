@@ -51,8 +51,8 @@ export class GlobalStoragePlugin extends AbstractStoragePlugin {
 
   _normalizeServices (services) {
     return {
-      read: services.fs.readJson.bind(services.fs),
-      write: services.fs.writeJson.bind(services.fs)
+      read: services.fs.readJSON.bind(services.fs),
+      write: services.fs.writeJSON.bind(services.fs)
     }
   }
 }

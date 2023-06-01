@@ -90,8 +90,8 @@ describe('storage plugins', function () {
     function dummyServices () {
       return {
         fs: {
-          readJson: sinon.stub().returns({}),
-          writeJson: sinon.spy()
+          readJSON: sinon.stub().returns({}),
+          writeJSON: sinon.spy()
         }
       }
     }
@@ -114,12 +114,12 @@ describe('storage plugins', function () {
 
       await this.plugin.init(services)
 
-      expect(services.fs.readJson).to.have.been.calledWith('globalStoragePath', {})
+      expect(services.fs.readJSON).to.have.been.calledWith('globalStoragePath', {})
     })
 
     it('should read the global storage object from file at the beginning', async function () {
       const services = dummyServices()
-      services.fs.readJson.returns({
+      services.fs.readJSON.returns({
         'type1-name1-id1': {
           foo: 'bar'
         }
@@ -140,7 +140,7 @@ describe('storage plugins', function () {
 
       await this.plugin.end()
 
-      expect(services.fs.writeJson).to.have.been.calledWith('globalStoragePath', {
+      expect(services.fs.writeJSON).to.have.been.calledWith('globalStoragePath', {
         'type1-name1-id1': {
           foo: 'bar'
         },
@@ -166,8 +166,8 @@ describe('storage plugins', function () {
 
       await this.plugin.end()
 
-      expect(services.fs.readJson).to.have.been.calledOn(services.fs)
-      expect(services.fs.writeJson).to.have.been.calledOn(services.fs)
+      expect(services.fs.readJSON).to.have.been.calledOn(services.fs)
+      expect(services.fs.writeJSON).to.have.been.calledOn(services.fs)
     })
   })
 })
