@@ -1,4 +1,3 @@
-
 describe('fs helpers', function () {
   describe('destination reader plugin', function () {
     beforeEach(async function () {

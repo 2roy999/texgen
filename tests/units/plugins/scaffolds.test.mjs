@@ -1,4 +1,3 @@
-
 function dummmyService () {
   return {
     copyTemplate: sinon.stub(),

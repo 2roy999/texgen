@@ -1,4 +1,3 @@
-
 const { any } = sinon.match
 
 function dummyServices () {

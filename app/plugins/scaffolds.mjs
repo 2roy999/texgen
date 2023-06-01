@@ -1,4 +1,3 @@
-
 import templatesPlugin from './templates.mjs'
 
 export default class ScaffoldsPlugin {

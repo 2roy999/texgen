@@ -1,4 +1,3 @@
-
 import * as editor from 'mem-fs-editor'
 import memFs from 'mem-fs'
 

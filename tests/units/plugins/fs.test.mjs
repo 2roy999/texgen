@@ -1,4 +1,3 @@
-
 describe('fs plugin', function () {
   beforeEach(async function () {
     this.memFsMock = await mockImport('mem-fs')

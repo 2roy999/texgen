@@ -1,4 +1,3 @@
-
 function dummyServices (name) {
   return {
     localStorage: {},

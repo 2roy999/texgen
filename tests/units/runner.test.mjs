@@ -1,4 +1,3 @@
-
 const { same } = sinon.match
 
 describe('generator runner', function () {
