@@ -103,7 +103,7 @@ export default class PluginsInjector {
       throw new Error('Cannot get injection after finalization')
     }
 
-    return Object.assign({}, ...service.dependencies
+    return Object.assign({}, ...(service.dependencies ?? [])
       .map(d => this._plugins[d.name].instance(this._getInjectionRequest(service))))
   }
 

@@ -283,6 +283,20 @@ describe('plugins injector', function () {
     await this.injector.finalize()
   })
 
+  it('should do return empty object when plugin missing dependencies property', async function () {
+    const fooPlugin = createDummyPlugin('foo')
+    delete fooPlugin.dependencies
+
+    this.injector.register(fooPlugin)
+
+    await this.injector.init()
+
+    const injection = await this.injector.getInjection(function DummyGenerator () {})
+
+    expect(fooPlugin.$.init).to.have.been.calledWith({})
+    expect(injection).to.deep.equal({})
+  })
+
   it('should register dependencies of existing service', async function () {
     const fooPlugin = createDummyPlugin('foo')
     const barPlugin = createDummyPlugin('bar')
