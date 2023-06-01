@@ -20,7 +20,7 @@ jobs:
       - run: npm run test
 
   publish-npm:
-    needs: build
+    needs: build-and-test
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
