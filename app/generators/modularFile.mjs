@@ -1,114 +1,78 @@
-
 import crypto from 'crypto'
 
 import Generator from './generator.mjs'
 
+import ScaffoldsPlugin from '../plugins/scaffolds.mjs'
+import { LocalStoragePlugin } from '../plugins/storage.mjs'
+import { DestinationReaderPlugin, TemplatesReaderPlugin } from '../plugins/fs-helpers.mjs'
+
 const EMPTY_LINE = ''
 
-export default class ModularFileGenerator extends Generator {
-  constructor (storage, {
-    dest,
-    modulesDir,
-    modules,
-    projectHeader
-  }) {
-    super(storage)
+async function modularFileGenerator ({
+  dest,
+  modulesDir,
+  modules,
+  projectHeader
+}) {
+  const argsId = crypto.createHash('sha256')
+    .update(`${dest}:${modulesDir}:${modules.join('')}:${projectHeader}`, 'utf8').digest('hex')
+  const localStorage = this.localStorage[argsId] ??= {}
 
-    this._dest = dest
-    this._modulesDir = modulesDir
-    this._modules = modules
-    this._projectHeader = projectHeader
-  }
-
-  async run () {
-    const baseSections = this.extractBaseSections()
-    const { currentOpening, currentSections } = this.extractCurrent()
+  const main = () => {
+    const baseSections = extractBaseSections()
+    const {
+      currentOpening,
+      currentSections
+    } = extractCurrent()
 
     const newSections = [
-      this.createNewProjectSectionIfNeeded(),
-      this.updateCurrentSections(currentSections, baseSections),
-      this.createNewModulesSections(baseSections)
+      createNewProjectSectionIfNeeded(),
+      updateCurrentSections(currentSections, baseSections),
+      createNewModulesSections(baseSections)
     ]
 
     const fileParts = [
-      this.createOpening(currentOpening),
-      this.createSectionParts(newSections)
+      createOpening(currentOpening),
+      createSectionParts(newSections)
     ]
 
     const fileContent = fileParts.join('\n')
 
-    this.addScaffolds({ content: fileContent, dest: this._dest })
+    this.addScaffold({
+      content: fileContent,
+      dest
+    })
 
-    this.updateStorage(baseSections)
+    updateStorage(baseSections)
   }
 
-  updateStorage (baseSections) {
-    const updatedObject = Object.fromEntries(
-      Object.values(baseSections)
-        .map(({
-          name,
-          hash
-        }) => [name, hash])
-    )
-
-    this.getStorage().set('sections', updatedObject)
-  }
-
-  createSectionParts (newSections) {
-    return newSections
-      .flat()
-      .flatMap(section => {
-        return [
-          section.header,
-          section.content
-        ]
-      })
-  }
-
-  createOpening (currentOpening) {
-    if (this.getStorage().get('exists') === undefined) {
-      return this.readTemplateFile(`${this._modulesDir}/_opening.tex`, { defaults: '' })
-    } else {
-      return currentOpening
-    }
-  }
-
-  createNewModulesSections (baseSections) {
-    return Object.values(baseSections)
-      .filter(({ name }) => this.getStorage().getPath(['sections', name]) === undefined)
-  }
-
-  updateCurrentSections (currentSections, baseSections) {
-    return currentSections
-      .map(section => {
-        const storedHash = this.getStorage().getPath(['sections', section.name])
-
-        if (section.hash === storedHash) {
-          return baseSections[section.name] || section
-        } else {
-          return section
-        }
-      })
-  }
-
-  createNewProjectSectionIfNeeded () {
-    if (this.getStorage().get('exists') === undefined) {
-      return {
-        header: `%% ${this._projectHeader}`,
-        content: [
+  const extractBaseSections = () => {
+    return Object.fromEntries(
+      modules.map(prettyName => {
+        const name = prettyName.toLowerCase().replace(/\s+/g, '_')
+        const header = `%% ${prettyName}`
+        const content = [
           EMPTY_LINE,
-          this.readTemplateFile(`${this._modulesDir}/_project.tex`, { defaults: '' }).trim(),
+          this.readTemplate(`${modulesDir}/${name}.tex`).trim(),
           EMPTY_LINE,
           EMPTY_LINE
         ].join('\n')
-      }
-    } else {
-      return []
-    }
+
+        const hash = crypto.createHash('sha256').update(content, 'utf8').digest('hex')
+
+        return {
+          name,
+          hash,
+          header,
+          content
+        }
+      })
+        .map(section => [section.name, section])
+    )
   }
 
-  extractCurrent () {
-    const [currentOpening, ...currentRawSections] = this.readDestinationFile(this._dest, { defaults: '' })
+  const extractCurrent = () => {
+    const [currentOpening, ...currentRawSections] = this.readDestination(dest, { defaults: '' })
       .split(/\r?\n(?=%%)/)
 
     const currentSections = currentRawSections
@@ -137,28 +101,77 @@ export default class ModularFileGenerator extends Generator {
     }
   }
 
-  extractBaseSections () {
-    return Object.fromEntries(
-      this._modules.map(prettyName => {
-        const name = prettyName.toLowerCase().replace(/\s+/g, '_')
-        const header = `%% ${prettyName}`
-        const content = [
+  const createNewProjectSectionIfNeeded = () => {
+    if (localStorage.exists === undefined) {
+      return {
+        header: `%% ${projectHeader}`,
+        content: [
           EMPTY_LINE,
-          this.readTemplateFile(`${this._modulesDir}/${name}.tex`).trim(),
+          this.readTemplate(`${modulesDir}/_project.tex`, { defaults: '' }).trim(),
           EMPTY_LINE,
           EMPTY_LINE
         ].join('\n')
+      }
+    } else {
+      return []
+    }
+  }
 
-        const hash = crypto.createHash('sha256').update(content, 'utf8').digest('hex')
+  const updateCurrentSections = (currentSections, baseSections) => {
+    return currentSections
+      .map(section => {
+        const storedHash = localStorage.sections[section.name]
 
-        return {
-          name,
-          hash,
-          header,
-          content
+        if (section.hash === storedHash) {
+          return baseSections[section.name] || section
+        } else {
+          return section
         }
       })
-        .map(section => [section.name, section])
-    )
   }
+
+  const createNewModulesSections = baseSections => {
+    return Object.values(baseSections)
+      .filter(({ name }) => localStorage.sections?.[name] === undefined)
+  }
+
+  const createOpening = currentOpening => {
+    if (localStorage.exists === undefined) {
+      return this.readTemplate(`${modulesDir}/_opening.tex`, { defaults: '' })
+    } else {
+      return currentOpening
+    }
+  }
+
+  const createSectionParts = newSections => {
+    return newSections
+      .flat()
+      .flatMap(section => {
+        return [
+          section.header,
+          section.content
+        ]
+      })
+  }
+
+  const updateStorage = baseSections => {
+    localStorage.sections = Object.fromEntries(
+      Object.values(baseSections)
+        .map(({
+          name,
+          hash
+        }) => [name, hash])
+    )
+    localStorage.exists = true
+  }
+
+  return main()
 }
+modularFileGenerator.dependencies = [
+  DestinationReaderPlugin,
+  LocalStoragePlugin,
+  TemplatesReaderPlugin,
+  ScaffoldsPlugin
+]
+
+export default modularFileGenerator

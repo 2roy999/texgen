@@ -4,14 +4,14 @@ import path from 'path'
 import url from 'url'
 import util from 'util'
 
-import Runner from './app/runner.mjs'
-import BaseGenerator from './app/generators/base.mjs'
+import GeneratorRunner from './app/runner.mjs'
+import mainGenerator from './app/generators/main.mjs'
 
 const __dirname = url.fileURLToPath(new URL('./app', import.meta.url))
 
 const { values: options, positionals: args } = util.parseArgs({ strict: false })
 
-new Runner(BaseGenerator, args, {
+new GeneratorRunner(mainGenerator, {
   ...options,
   templatesRoot: path.join(__dirname, 'templates'),
   destinationRoot: path.join(process.cwd(), args[0] || '.'),
