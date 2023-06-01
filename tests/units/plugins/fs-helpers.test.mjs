@@ -1,9 +1,6 @@
-import { replaceEsm } from 'testdouble'
 
 describe('fs helpers', function () {
-
   describe('destination reader plugin', function () {
-
     beforeEach(async function () {
       await mockImport('../../../app/plugins/fs.mjs', {
         default: 'fs plugin'
@@ -48,7 +45,6 @@ describe('fs helpers', function () {
   })
 
   describe('destination writer plugin', function () {
-
     beforeEach(async function () {
       await mockImport('../../../app/plugins/fs.mjs', {
         default: 'fs plugin'

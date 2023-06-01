@@ -11,8 +11,8 @@
     "npm": ">=8.6.0"
   },
   "scripts": {
-    "lint": "eslint index.mjs app/**/*.[m]js tests/**/*.[m]js",
-    "lint:fix": "eslint index.mjs app/**/*.[m]js tests/**/*.[m]js --fix",
+    "lint": "eslint index.mjs 'app/**/*.[m]js' 'tests/**/*.[m]js'",
+    "lint:fix": "eslint index.mjs 'app/**/*.[m]js' 'tests/**/*.[m]js' --fix",
     "test": "mocha 'tests/**/*.test.[m]js'"
   },
   "bin": {

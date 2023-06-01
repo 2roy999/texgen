@@ -1,4 +1,3 @@
-import inquirer from 'inquirer'
 
 function dummyServices (name) {
   return {
